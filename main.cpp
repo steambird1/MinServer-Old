@@ -169,7 +169,7 @@ char not_supported[] = "<html><head><title>Not Implemented - 501</title></head><
 SOCKET s;
 
 vector<string> defiles = {"index.html","index.htm"};
-map<string, string> ctypes = { {".html","text/html"}, {".htm", "text/html"}, {".ico","image/ico"}, {".jpg", "image/jpg"}, {".jpeg", "image/jpeg"}, {".png", "image/apng"}, {".txt","text/plain"}, {".css", "text/css"}, {".js", "application/x-javascript"}, {".mp3", "audio/mpeg"}, {".wav", "audio/wav"}, {".mp4", "video/mpeg"} };
+map<string, string> ctypes = { {".apk", "application/vnd.android"},  {".html","text/html"}, {".htm", "text/html"}, {".ico","image/ico"}, {".jpg", "image/jpg"}, {".jpeg", "image/jpeg"}, {".png", "image/apng"}, {".txt","text/plain"}, {".css", "text/css"}, {".js", "application/x-javascript"}, {".mp3", "audio/mpeg"}, {".wav", "audio/wav"}, {".mp4", "video/mpeg"} };
 
 string defaultType = "text/plain";
 
@@ -188,6 +188,7 @@ bool verbose = false;
 #define printf_verbose(...) if (verbose) printf(__VA_ARGS__)
 
 int main(int argc, char* argv[]) {
+	int rcv_bufsz = 4096;
 	atexit(close1);
 	GetCurrentDirectory(512, cwd);
 	hnd = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -198,6 +199,10 @@ int main(int argc, char* argv[]) {
 			string argthis = argv[i];
 			if (argthis == "--verbose" || argthis == "-v")
 				verbose = true;
+			if (argthis == "--buffer" || argthis == "-b") {
+				rcv_bufsz = atoi(argv[i + 1]);
+				i++;
+			}
 		}
 	}
 
@@ -225,7 +230,6 @@ int main(int argc, char* argv[]) {
 	SOCKET sr;
 	sockaddr_in ra;
 	int ra_size = sizeof(ra), ret;
-	const int rcv_bufsz = 4096;
 	printf("Preparing buffer with %d bytes...\n", rcv_bufsz);
 	char *buf = new char[rcv_bufsz];
 	printState("Listening", FOREGROUND_GREEN | FOREGROUND_INTENSITY);
