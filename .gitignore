@@ -260,3 +260,8 @@ paket-files/
 __pycache__/
 *.pyc
 /testaudio.mp3
+*.jpg
+*.mp4
+*.rar
+*.html
+/MinServer.exe

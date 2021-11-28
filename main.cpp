@@ -182,8 +182,17 @@ void close1(void) {
 	hold();
 }
 
+//#define VERBOSE_BEGIN true
+
 string tp; // for debug
-bool verbose = false;
+
+#ifndef VERBOSE_BEGIN
+
+#define VERBOSE_BEGIN false
+
+#endif
+
+bool verbose = VERBOSE_BEGIN;
 
 #define printf_verbose(...) if (verbose) printf(__VA_ARGS__)
 
@@ -245,6 +254,9 @@ int main(int argc, char* argv[]) {
 	while (true) {
 		//hold(); // currently
 		memset(buf, 0, sizeof(buf));
+		// by this way let's try this.
+		DWORD test;
+		// end
 		sr = accept(s, (SOCKADDR *)&ra, &ra_size);
 		if (sr == INVALID_SOCKET) {
 			SetConsoleTextAttribute(hnd, FOREGROUND_INTENSITY | FOREGROUND_RED);
@@ -258,9 +270,26 @@ int main(int argc, char* argv[]) {
 			buf[ret] = '\0';
 			// Received data in 'buf', resolve it
 			printf("Receive: Resolving ...\n");
+			printf_verbose("Resolved data: \n");
+			printf_verbose("%s\n", buf);
+			printf_verbose("== END ==\n");
 			httpReq res = resolve(buf);
 			SetConsoleTextAttribute(hnd, FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_BLUE);
 			printf_verbose("Receive: Resolved %s %s request for %s\n", res.protocol.c_str(), res.mode ? "GET" : "POST", res.path.c_str());
+			if (!res.mode) {
+				// Try another receive
+				// Always??
+				int total_length = atoi(res.settings["Content-Length"].c_str());
+				printf("Post Receive: Getting length %d\n", total_length);
+				char post_buf[4096];
+				printf_verbose("Post Receive: Start segements: ");
+				for (int i = 0; i <= total_length; i += 4096) {
+					memset(post_buf, 0, sizeof(post_buf));
+					int r2 = recv(sr, post_buf, sizeof(post_buf), 0);
+					printf_verbose("Post Receive: Received another %d byte(s): \n%s\n", r2, post_buf);
+				}
+				printf("Post Receive: End of post receive\n");
+			}
 			printf_verbose("Receive: External Parameters: \n");
 			for (auto it = res.settings.begin(); it != res.settings.end(); it++) {
 				printf_verbose("%s = %s\n", it->first.c_str(), it->second.c_str());
